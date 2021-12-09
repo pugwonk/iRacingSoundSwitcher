@@ -1,13 +1,15 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
-namespace iRacingSoundChanger
+namespace iRacingSound
 {
     class Program
     {
-
         private static string iniGetValue(string[] inif, string name)
         {
             for (int i = 0; i < inif.Length; i++)
@@ -33,6 +35,7 @@ namespace iRacingSoundChanger
                 }
             }
         }
+
 
         static void Main(string[] args)
         {
@@ -60,7 +63,7 @@ namespace iRacingSoundChanger
             if (args.Length == 1)
             {
                 string mypath = AppDomain.CurrentDomain.BaseDirectory;
-                string batch = $"\"{mypath}iRacingSoundChanger\" {devSpeakerId} \"{devSpeakerName}\" {devVoiceChatId} \"{devVoiceChatName}\"";
+                string batch = $"\"{mypath}iRacingSound\" {devSpeakerId} \"{devSpeakerName}\" {devVoiceChatId} \"{devVoiceChatName}\"";
                 string fn = args[0] + ".bat";
                 File.WriteAllText(fn, batch);
                 Console.WriteLine($"Current sound settings saved as {fn}");
