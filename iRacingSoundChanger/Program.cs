@@ -1,22 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Management;
 using System.Text.RegularExpressions;
-using CommandLine;
 
 namespace iRacingSoundChanger
 {
     class Program
     {
-
-        public class Options
-        {
-            [Option('m', Required = false, HelpText = "Main output device e.g. -m \"System Default\"")]
-            public string OutputMain { get; set; }
-            [Option('v', Required = false, HelpText = "Voice output device e.g. -v \"Headphones (2- Rift S)\"")]
-            public string OutputVoice { get; set; }
-        }
 
         private static string iniGetValue(string[] inif, string name)
         {
@@ -25,7 +15,8 @@ namespace iRacingSoundChanger
                 string prefix = name + "=";
                 if (inif[i].StartsWith(prefix))
                 {
-                    return inif[i].Substring(prefix.Length);
+                    string outp = Regex.Replace(inif[i].Substring(prefix.Length), @"\;.*", "").Trim();
+                    return outp;
                 }
             }
             throw new Exception($"Can't find INI file entry for {name}");
@@ -46,41 +37,44 @@ namespace iRacingSoundChanger
         static void Main(string[] args)
         {
             var docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            var iRacingDocs = Path.Combine(docs, "iRacing"); 
-            Parser.Default.ParseArguments<Options>(args)
-            .WithParsed<Options>(o =>
+            var iRacingDocs = Path.Combine(docs, "iRacing");
+            string appIni = Path.Combine(iRacingDocs, "app.ini");
+            string appIniBak = Path.Combine(iRacingDocs, "app.ini.bak");
+            if (!File.Exists(appIniBak))
             {
-                string appIni = Path.Combine(iRacingDocs, "app.ini");
-                string appIniBak = Path.Combine(iRacingDocs, "app.ini.bak");
-                Console.WriteLine($"Saving current INI file as {appIniBak}. To use the current main audio and voice audio, type:");
-                Console.WriteLine();
-
-                string[] iniContents = File.ReadAllLines(appIni);
-                string curMainD = iniGetValue(iniContents, "devSpeakerId");
-                curMainD = Regex.Replace(curMainD, @"\;.*", "").Trim();
-                string curVoiceD = iniGetValue(iniContents, "devVoiceChatId");
-                curVoiceD = Regex.Replace(curVoiceD, @"\;.*", "").Trim();
-                Console.WriteLine($"iRacingSoundChanger -m {curMainD} -v {curVoiceD}");
-
                 File.Copy(appIni, appIniBak, true);
+                Console.WriteLine($"Saving current INI file as {appIniBak}");
+            }
 
-                if (o.OutputMain != null)
-                {
-                    // Sometimes this ends in comments
-                    Console.WriteLine($"Setting main audio device to {o.OutputMain}");
-                    iniSetValue(iniContents, "devSpeakerId", o.OutputMain);
-                    iniSetValue(iniContents, "devSpeakerName", "tbd");
-                }
+            if (args.Length == 0)
+            {
+                Console.WriteLine("Please provide a parameter with the name to save the current settings as (e.g. \"vr\")");
+            }
 
-                if (o.OutputVoice != null)
-                {
-                    // Sometimes this ends in comments
-                    Console.WriteLine($"Setting voice audio device to {o.OutputVoice}");
-                    iniSetValue(iniContents, "devVoiceChatId", o.OutputVoice);
-                    iniSetValue(iniContents, "devVoiceChatName", "tbd");
-                }
+            string[] iniContents = File.ReadAllLines(appIni);
+            string devSpeakerId = iniGetValue(iniContents, "devSpeakerId");
+            string devSpeakerName = iniGetValue(iniContents, "devSpeakerName");
+            string devVoiceChatId = iniGetValue(iniContents, "devVoiceChatId");
+            string devVoiceChatName = iniGetValue(iniContents, "devVoiceChatName");
+
+            if (args.Length == 1)
+            {
+                string mypath = AppDomain.CurrentDomain.BaseDirectory;
+                string batch = $"\"{mypath}iRacingSoundChanger\" {devSpeakerId} \"{devSpeakerName}\" {devVoiceChatId} \"{devVoiceChatName}\"";
+                string fn = args[0] + ".bat";
+                File.WriteAllText(fn, batch);
+                Console.WriteLine($"Current sound settings saved as {fn}");
+            }
+
+            if (args.Length == 4)
+            {
+                Console.WriteLine("Setting sound devices.");
+                iniSetValue(iniContents, "devSpeakerId", args[0]);
+                iniSetValue(iniContents, "devSpeakerName", args[1]);
+                iniSetValue(iniContents, "devVoiceChatId", args[2]);
+                iniSetValue(iniContents, "devVoiceChatName", args[3]);
                 File.WriteAllLines(appIni, iniContents);
-            });
+            }
         }
     }
 }

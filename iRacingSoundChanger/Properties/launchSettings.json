@@ -2,7 +2,7 @@
   "profiles": {
     "iRacingSoundChanger": {
       "commandName": "Project",
-      "commandLineArgs": "iRacingSoundChanger -m {0.0.0.00000000}.{0677ec30-23b0-44e4-bd90-a7f382bbd770} -v {0677EC30-23B0-44E4-BD90-A7F382BBD770}"
+      "commandLineArgs": "a"
     }
   }
 }
