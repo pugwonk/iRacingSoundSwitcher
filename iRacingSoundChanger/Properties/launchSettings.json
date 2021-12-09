@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "iRacingSoundChanger": {
+      "commandName": "Project",
+      "commandLineArgs": "-m \"Headphones (2- Rift S)\" -v \"Headphones (2- Rift S)\""
+    }
+  }
+}
